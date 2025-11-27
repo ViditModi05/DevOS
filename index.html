@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>DEV COMMAND CENTER v6.3</title>
+    <title>DEV COMMAND CENTER v6.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -74,7 +74,7 @@
     <header class="h-16 border-b border-gray-800 flex items-center justify-between px-4 lg:px-6 bg-[#141419] zen-hidden shrink-0 sticky top-0 z-40 w-full overflow-hidden">
         <div class="flex items-center gap-2 sm:gap-4 shrink-0 mr-2">
             <i class="fas fa-terminal text-xl sm:text-2xl text-emerald-400"></i>
-            <h1 class="text-lg sm:text-xl font-bold tracking-wider text-white whitespace-nowrap">DEV<span class="text-emerald-400">OS</span> <span class="text-gray-600 text-xs sm:text-sm font-normal hidden sm:inline">// v6.3</span></h1>
+            <h1 class="text-lg sm:text-xl font-bold tracking-wider text-white whitespace-nowrap">DEV<span class="text-emerald-400">OS</span> <span class="text-gray-600 text-xs sm:text-sm font-normal hidden sm:inline">// v6.4</span></h1>
         </div>
         
         <div class="flex items-center gap-2 sm:gap-6 shrink-0 ml-auto">
@@ -84,20 +84,19 @@
 
             <div class="h-6 w-px bg-gray-800 hidden sm:block"></div>
 
-            <!-- Data Controls (Visible on Mobile now) -->
-            <div class="flex gap-3 items-center">
-                <button onclick="exportData()" class="text-xs text-gray-500 hover:text-white transition-colors" title="Save">
-                    <i class="fas fa-download text-sm"></i><span class="hidden sm:inline ml-1"> SAVE</span>
-                </button>
+            <!-- Data Controls -->
+            <div class="flex gap-2 hidden sm:flex items-center">
+                <button onclick="openHistoryModal()" class="text-xs text-emerald-400 hover:text-white transition-colors font-bold bg-emerald-900/10 px-2 py-1 rounded border border-emerald-900/30 whitespace-nowrap"><i class="fas fa-history mr-1"></i> LOG WORK</button>
+                <div class="w-px h-4 bg-gray-700 mx-2"></div>
+                <button onclick="exportData()" class="text-xs text-gray-500 hover:text-white transition-colors" title="Save"><i class="fas fa-download"></i></button>
                 <label class="text-xs text-gray-500 hover:text-white transition-colors cursor-pointer" title="Load">
-                    <i class="fas fa-upload text-sm"></i><span class="hidden sm:inline ml-1"> LOAD</span>
+                    <i class="fas fa-upload"></i>
                     <input type="file" id="import-file" class="hidden" onchange="importData(this)">
                 </label>
             </div>
 
             <!-- Stats Group -->
             <div class="flex gap-3 items-center ml-2 border-l border-gray-800 pl-2">
-                 <!-- Level -->
                 <div class="flex flex-col w-20 sm:w-32 lg:w-40 shrink-0">
                     <div class="flex justify-between text-[10px] mono mb-1">
                         <span id="level-display" class="text-yellow-400 font-bold">LVL 0</span>
@@ -107,8 +106,6 @@
                         <div id="xp-bar" class="h-full bg-gradient-to-r from-yellow-600 to-yellow-400 w-0 transition-all duration-500"></div>
                     </div>
                 </div>
-
-                <!-- Streak -->
                 <div class="text-center shrink-0">
                     <div class="text-[8px] sm:text-[10px] text-gray-500 font-bold uppercase">Streak</div>
                     <div class="text-base sm:text-lg font-bold text-white mono leading-none"><i class="fas fa-fire text-orange-500 mr-1"></i> <span id="streak-count">0</span></div>
@@ -117,7 +114,7 @@
         </div>
     </header>
 
-    <!-- MOBILE NAV (Bottom) -->
+    <!-- MOBILE NAV -->
     <div class="lg:hidden fixed bottom-0 left-0 right-0 bg-[#141419] border-t border-gray-800 flex justify-around p-3 z-50 zen-hidden">
         <button onclick="scrollToSection('timer-section')" class="text-white flex flex-col items-center text-xs"><i class="fas fa-stopwatch text-lg mb-1"></i>Timer</button>
         <button onclick="scrollToSection('tasks-section')" class="text-gray-500 hover:text-white flex flex-col items-center text-xs"><i class="fas fa-tasks text-lg mb-1"></i>Tasks</button>
@@ -210,9 +207,7 @@
                     <h2 class="font-bold text-gray-300 text-[10px] uppercase tracking-widest">Deployment Schedule</h2>
                     <button onclick="openScheduleModal()" class="text-gray-500 hover:text-white"><i class="fas fa-pen text-xs"></i></button>
                 </div>
-                <div class="space-y-3 text-xs" id="schedule-display">
-                    <!-- Injected via JS -->
-                </div>
+                <div class="space-y-3 text-xs" id="schedule-display"></div>
             </div>
         </div>
     </main>
@@ -311,9 +306,7 @@
             setInterval(checkCurrentFocus, 60000); setInterval(saveData, 30000);
         };
 
-        function scrollToSection(id) {
-            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
-        }
+        function scrollToSection(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
 
         function loadData() {
             const saved = localStorage.getItem('dev_os_v6');
@@ -321,7 +314,6 @@
                 const parsed = JSON.parse(saved);
                 Object.assign(STATE, parsed);
                 if(!Array.isArray(STATE.logs)) STATE.logs = []; 
-                // Restore Streak if missing from old data
                 if(typeof STATE.streak === 'undefined') STATE.streak = 0;
             }
             document.getElementById('quick-notes').value = STATE.notes[STATE.currentNoteTab];
@@ -336,93 +328,15 @@
         function checkDateReset() {
             const today = new Date().toDateString();
             if (STATE.lastLoginDate !== today) { 
-                // Streak Logic
-                const yesterday = new Date();
-                yesterday.setDate(yesterday.getDate() - 1);
-                
-                if(STATE.lastLoginDate === yesterday.toDateString()) {
-                    STATE.streak++;
-                } else if (new Date(STATE.lastLoginDate) < yesterday) {
-                    STATE.streak = 0; // Reset
-                }
-                
-                STATE.gitPushed = false; 
-                STATE.lastLoginDate = today; 
-                saveData(); 
-                updateGitStatusUI(); 
-                updateLevel(); 
+                const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+                if(STATE.lastLoginDate === yesterday.toDateString()) STATE.streak++;
+                else if (new Date(STATE.lastLoginDate) < yesterday) STATE.streak = 0;
+                STATE.gitPushed = false; STATE.lastLoginDate = today; 
+                saveData(); updateGitStatusUI(); updateLevel(); 
             }
         }
 
-        // HISTORY MANAGER
-        function openHistoryModal() {
-            renderHistoryList();
-            document.getElementById('history-modal').classList.add('active');
-            document.getElementById('hist-date').valueAsDate = new Date();
-        }
-
-        function renderHistoryList() {
-            const container = document.getElementById('history-list');
-            container.innerHTML = '';
-            const sortedLogs = [...STATE.logs].sort((a, b) => b.timestamp - a.timestamp);
-
-            if(sortedLogs.length === 0) { container.innerHTML = '<div class="text-xs text-gray-500 text-center py-4">No logs yet. Start coding!</div>'; return; }
-
-            sortedLogs.forEach(log => {
-                const dateStr = new Date(log.timestamp).toLocaleDateString();
-                const color = log.engine === 'unreal' ? 'text-blue-400' : 'text-emerald-400';
-                const icon = log.engine === 'unreal' ? 'fa-cube' : 'fa-layer-group';
-                container.innerHTML += `<div class="flex justify-between items-center p-2 bg-gray-900 rounded border border-gray-800 text-xs"><div class="flex items-center gap-2"><i class="fas ${icon} ${color}"></i><span class="text-gray-300">${dateStr}</span><span class="text-gray-500 font-bold">${log.hours.toFixed(2)}h</span></div><button onclick="deleteLog(${log.id})" class="text-gray-600 hover:text-red-500 px-2"><i class="fas fa-trash"></i></button></div>`;
-            });
-        }
-
-        function addManualLog() {
-            const dateVal = document.getElementById('hist-date').value;
-            const engine = document.getElementById('hist-engine').value;
-            const hours = parseFloat(document.getElementById('hist-hours').value);
-            if (!dateVal || isNaN(hours) || hours <= 0) return;
-            const timestamp = new Date(dateVal + 'T12:00:00').getTime();
-            STATE.logs.push({ id: Date.now(), timestamp, engine, hours });
-            STATE.totalHours += hours;
-            saveData(); updateLevel(); updateChartData(); renderHistoryList(); AudioEngine.levelUp();
-        }
-
-        function deleteLog(id) {
-            if(!confirm("Delete?")) return;
-            const idx = STATE.logs.findIndex(l => l.id === id);
-            if (idx > -1) {
-                STATE.totalHours -= STATE.logs[idx].hours;
-                STATE.logs.splice(idx, 1);
-                saveData(); updateLevel(); updateChartData(); renderHistoryList();
-            }
-        }
-
-        // CHART
-        function updateChartData() {
-            if (!chartInstance) return;
-            const labels = [], unrealData = [], unityData = [];
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date(); d.setDate(d.getDate() - i);
-                const dateKey = d.toLocaleDateString();
-                labels.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
-                let u=0, n=0;
-                STATE.logs.forEach(log => { if (new Date(log.timestamp).toLocaleDateString() === dateKey) { if(log.engine === 'unreal') u += log.hours; else n += log.hours; } });
-                unrealData.push(u); unityData.push(n);
-            }
-            chartInstance.data.labels = labels; chartInstance.data.datasets[0].data = unrealData; chartInstance.data.datasets[1].data = unityData; chartInstance.update();
-        }
-
-        function initChart() {
-            const ctx = document.getElementById('activityChart').getContext('2d');
-            chartInstance = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: [], datasets: [{ label: 'Unreal', data: [], backgroundColor: '#3b82f6', borderRadius: 2 }, { label: 'Unity', data: [], backgroundColor: '#10b981', borderRadius: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true, grid: { display: false }, ticks: { color: '#666', font: { size: 9 } } }, y: { stacked: true, grid: { color: '#333' }, ticks: { color: '#666', font: { size: 9 } } } }, plugins: { legend: { display: false } } }
-            });
-            updateChartData();
-        }
-
-        // TIMER
+        // TIMER LOGIC FIX
         function toggleTimer() {
             const btn = document.getElementById('main-action-btn');
             if (!STATE.isTimerRunning) {
@@ -435,12 +349,24 @@
                 AudioEngine.click();
             } else {
                 STATE.isTimerRunning = false; clearInterval(STATE.timerInterval);
-                let hoursLogged = 0;
-                if (STATE.timerMode === 'stopwatch') { hoursLogged = STATE.elapsedTime / 3600000; STATE.elapsedTime = 0; updateTimerDisplay(); } 
-                else { hoursLogged = (Date.now() - STATE.startTime) / 3600000; document.getElementById('timer-display').innerText = "00:25:00"; }
                 
-                if(hoursLogged > 0) {
-                    STATE.logs.push({ id: Date.now(), timestamp: Date.now(), engine: STATE.currentEngine, hours: hoursLogged });
+                let hoursLogged = 0;
+                const now = Date.now();
+                const sessionDuration = now - STATE.startTime;
+                
+                if (STATE.timerMode === 'stopwatch') {
+                    // Correct calculation for Stopwatch
+                    hoursLogged = sessionDuration / 3600000;
+                    STATE.elapsedTime = 0; 
+                    updateTimerDisplay(); 
+                } else {
+                    // Pomodoro: Log actual time spent even if aborted
+                    hoursLogged = sessionDuration / 3600000;
+                    document.getElementById('timer-display').innerText = "00:25:00";
+                }
+                
+                if(hoursLogged > 0.001) {
+                    STATE.logs.push({ id: now, timestamp: now, engine: STATE.currentEngine, hours: hoursLogged });
                     STATE.totalHours += hoursLogged;
                     updateLevel(); updateChartData();
                     if (STATE.currentEngine === 'unity') showGitReminder();
@@ -450,16 +376,6 @@
             }
         }
 
-        // HELPERS
-        function updateLevel() {
-            const level = Math.floor(STATE.totalHours / 10);
-            const xp = Math.floor(STATE.totalHours % 10);
-            document.getElementById('level-display').innerText = `LVL ${level}`;
-            document.getElementById('xp-display').innerText = `${xp.toFixed(1)}/10 XP`;
-            document.getElementById('xp-bar').style.width = `${(xp / 10) * 100}%`;
-            // Fix for streak display
-            document.getElementById('streak-count').innerText = STATE.streak;
-        }
         function updateTimerDisplay() {
             let displayTime = 0;
             if (STATE.timerMode === 'stopwatch') displayTime = STATE.isTimerRunning ? Date.now() - STATE.startTime : STATE.elapsedTime;
@@ -470,6 +386,57 @@
             }
             const date = new Date(displayTime);
             document.getElementById('timer-display').innerText = date.toISOString().substr(11, 8);
+        }
+
+        // HISTORY
+        function openHistoryModal() { renderHistoryList(); document.getElementById('history-modal').classList.add('active'); document.getElementById('hist-date').valueAsDate = new Date(); }
+        function closeModal(id){document.getElementById(id).classList.remove('active');}
+        function renderHistoryList() {
+            const c = document.getElementById('history-list'); c.innerHTML = '';
+            const sorted = [...STATE.logs].sort((a, b) => b.timestamp - a.timestamp);
+            if(sorted.length === 0) { c.innerHTML = '<div class="text-xs text-gray-500 text-center py-4">No logs yet. Start coding!</div>'; return; }
+            sorted.forEach(l => {
+                const d = new Date(l.timestamp).toLocaleDateString();
+                const col = l.engine === 'unreal' ? 'text-blue-400' : 'text-emerald-400';
+                const ic = l.engine === 'unreal' ? 'fa-cube' : 'fa-layer-group';
+                c.innerHTML += `<div class="flex justify-between items-center p-2 bg-gray-900 rounded border border-gray-800 text-xs"><div class="flex items-center gap-2"><i class="fas ${ic} ${col}"></i><span class="text-gray-300">${d}</span><span class="text-gray-500 font-bold">${l.hours.toFixed(2)}h</span></div><button onclick="deleteLog(${l.id})" class="text-gray-600 hover:text-red-500 px-2"><i class="fas fa-trash"></i></button></div>`;
+            });
+        }
+        function addManualLog() {
+            const d = document.getElementById('hist-date').value, e = document.getElementById('hist-engine').value, h = parseFloat(document.getElementById('hist-hours').value);
+            if (!d || isNaN(h) || h <= 0) return;
+            const ts = new Date(d + 'T12:00:00').getTime();
+            STATE.logs.push({ id: Date.now(), timestamp: ts, engine: e, hours: h });
+            STATE.totalHours += h; saveData(); updateLevel(); updateChartData(); renderHistoryList(); AudioEngine.levelUp();
+        }
+        function deleteLog(id) {
+            if(!confirm("Delete?")) return;
+            const idx = STATE.logs.findIndex(l => l.id === id);
+            if (idx > -1) { STATE.totalHours -= STATE.logs[idx].hours; STATE.logs.splice(idx, 1); saveData(); updateLevel(); updateChartData(); renderHistoryList(); }
+        }
+
+        // CHART
+        function updateChartData() {
+            if (!chartInstance) return;
+            const lbl = [], uData = [], nData = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                const k = d.toLocaleDateString();
+                lbl.push(d.toLocaleDateString('en-US', { weekday: 'short' }));
+                let u=0, n=0;
+                STATE.logs.forEach(l => { if (new Date(l.timestamp).toLocaleDateString() === k) { if(l.engine === 'unreal') u += l.hours; else n += l.hours; } });
+                uData.push(u); nData.push(n);
+            }
+            chartInstance.data.labels = lbl; chartInstance.data.datasets[0].data = uData; chartInstance.data.datasets[1].data = nData; chartInstance.update();
+        }
+
+        // STANDARD UI
+        function updateLevel() {
+            const lvl = Math.floor(STATE.totalHours / 10); const xp = Math.floor(STATE.totalHours % 10);
+            document.getElementById('level-display').innerText = `LVL ${lvl}`;
+            document.getElementById('xp-display').innerText = `${xp.toFixed(1)}/10 XP`;
+            document.getElementById('xp-bar').style.width = `${(xp / 10) * 100}%`;
+            document.getElementById('streak-count').innerText = STATE.streak;
         }
         function switchEngine(e) { if(STATE.isTimerRunning)return; STATE.currentEngine=e; renderEngineUI(); renderPortal(); }
         function renderEngineUI() {
@@ -498,46 +465,17 @@
         function importData(input){const f=input.files[0]; if(!f)return; const r=new FileReader(); r.onload=function(e){try{const d=JSON.parse(e.target.result); Object.assign(STATE,d); saveData(); location.reload();}catch(err){alert("Invalid File");}}; r.readAsText(f);}
 
         function renderSchedule() {
-            // FIX: Ensure IDs exist in DOM by restoring the HTML structure
             const schedDiv = document.getElementById('schedule-display');
-            schedDiv.innerHTML = `
-                <div class="p-3 bg-blue-900/20 border border-blue-900 rounded">
-                    <div class="font-bold text-blue-400 mb-1">MORNING (UNREAL)</div>
-                    <div class="text-gray-400" id="sched-morn-task">${STATE.schedule.morning}</div>
-                    <div class="text-gray-500 italic mt-1" id="sched-morn-note">${STATE.schedule.morningNote}</div>
-                </div>
-                <div class="p-3 bg-emerald-900/20 border border-emerald-900 rounded">
-                    <div class="font-bold text-emerald-400 mb-1">NIGHT (UNITY)</div>
-                    <div class="text-gray-400" id="sched-night-task">${STATE.schedule.night}</div>
-                    <div class="text-gray-500 italic mt-1" id="sched-night-note">${STATE.schedule.nightNote}</div>
-                </div>
-                <div class="mt-6 pt-4 border-t border-gray-800">
-                    <div class="text-[10px] text-gray-500 font-bold mb-2">CURRENT SPRINT</div>
-                    <div class="text-white font-bold" id="sched-sprint-name">${STATE.schedule.sprintName}</div>
-                    <div class="text-white font-bold mt-1" id="sched-sprint-focus">${STATE.schedule.sprintFocus}</div>
-                </div>
-            `;
+            schedDiv.innerHTML = `<div class="p-3 bg-blue-900/20 border border-blue-900 rounded"><div class="font-bold text-blue-400 mb-1">MORNING (UNREAL)</div><div class="text-gray-400" id="sched-morn-task">${STATE.schedule.morning}</div><div class="text-gray-500 italic mt-1" id="sched-morn-note">${STATE.schedule.morningNote}</div></div><div class="p-3 bg-emerald-900/20 border border-emerald-900 rounded"><div class="font-bold text-emerald-400 mb-1">NIGHT (UNITY)</div><div class="text-gray-400" id="sched-night-task">${STATE.schedule.night}</div><div class="text-gray-500 italic mt-1" id="sched-night-note">${STATE.schedule.nightNote}</div></div><div class="mt-6 pt-4 border-t border-gray-800"><div class="text-[10px] text-gray-500 font-bold mb-2">CURRENT SPRINT</div><div class="text-white font-bold" id="sched-sprint-name">${STATE.schedule.sprintName}</div><div class="text-white font-bold mt-1" id="sched-sprint-focus">${STATE.schedule.sprintFocus}</div></div>`;
         }
-        
-        function openScheduleModal(){
-            document.getElementById('edit-morn-task').value=STATE.schedule.morning; document.getElementById('edit-morn-note').value=STATE.schedule.morningNote;
-            document.getElementById('edit-night-task').value=STATE.schedule.night; document.getElementById('edit-night-note').value=STATE.schedule.nightNote;
-            document.getElementById('edit-sprint-name').value=STATE.schedule.sprintName; document.getElementById('edit-sprint-focus').value=STATE.schedule.sprintFocus;
-            document.getElementById('schedule-modal').classList.add('active');
-        }
-        function saveSchedule(){
-            STATE.schedule.morning=document.getElementById('edit-morn-task').value; STATE.schedule.morningNote=document.getElementById('edit-morn-note').value;
-            STATE.schedule.night=document.getElementById('edit-night-task').value; STATE.schedule.nightNote=document.getElementById('edit-night-note').value;
-            STATE.schedule.sprintName=document.getElementById('edit-sprint-name').value; STATE.schedule.sprintFocus=document.getElementById('edit-sprint-focus').value;
-            saveData(); renderSchedule(); closeModal('schedule-modal');
-        }
+        function openScheduleModal(){document.getElementById('edit-morn-task').value=STATE.schedule.morning; document.getElementById('edit-morn-note').value=STATE.schedule.morningNote; document.getElementById('edit-night-task').value=STATE.schedule.night; document.getElementById('edit-night-note').value=STATE.schedule.nightNote; document.getElementById('edit-sprint-name').value=STATE.schedule.sprintName; document.getElementById('edit-sprint-focus').value=STATE.schedule.sprintFocus; document.getElementById('schedule-modal').classList.add('active');}
+        function saveSchedule(){STATE.schedule.morning=document.getElementById('edit-morn-task').value; STATE.schedule.morningNote=document.getElementById('edit-morn-note').value; STATE.schedule.night=document.getElementById('edit-night-task').value; STATE.schedule.nightNote=document.getElementById('edit-night-note').value; STATE.schedule.sprintName=document.getElementById('edit-sprint-name').value; STATE.schedule.sprintFocus=document.getElementById('edit-sprint-focus').value; saveData(); renderSchedule(); closeModal('schedule-modal');}
         function toggleZenMode(){STATE.zenMode=!STATE.zenMode; if(STATE.zenMode)document.body.classList.add('zen-active'); else document.body.classList.remove('zen-active');}
         function switchNoteTab(tab){STATE.notes[STATE.currentNoteTab]=document.getElementById('quick-notes').value; STATE.currentNoteTab=tab; document.getElementById('quick-notes').value=STATE.notes[tab]||""; ['general','unreal','unity'].forEach(t=>{const b=document.getElementById(`tab-${t}`); if(t===tab){b.classList.replace('bg-gray-900','bg-[#141419]');b.classList.replace('text-gray-500','text-gray-300');}else{b.classList.replace('bg-[#141419]','bg-gray-900');b.classList.replace('text-gray-300','text-gray-500');}});}
         function setTimerMode(m){if(STATE.isTimerRunning)return; STATE.timerMode=m; document.getElementById('mode-stopwatch').className=m==='stopwatch'?"text-[10px] font-bold text-white":"text-[10px] font-bold text-gray-500 hover:text-white"; document.getElementById('mode-pomodoro').className=m==='pomodoro'?"text-[10px] font-bold text-white":"text-[10px] font-bold text-gray-500 hover:text-white"; document.getElementById('timer-display').innerText=m==='stopwatch'?"00:00:00":"00:25:00";}
 
         function renderCourses(){const c=document.getElementById('courses-list'); c.innerHTML=''; STATE.courses.forEach(course=>{const p=Math.round((course.current/course.total)*100); c.innerHTML+=`<div class="bg-[#141419] p-3 rounded border border-gray-800 hover:border-gray-600 transition-colors group relative"><div class="flex justify-between mb-1 items-center"><span class="text-xs font-bold text-gray-300 truncate w-32">${course.name}</span><span class="text-[10px] mono text-gray-500">${course.current}/${course.total} (${p}%)</span></div><div class="w-full bg-gray-800 rounded-full h-1.5 cursor-pointer" onclick="editCourse(${course.id})"><div class="h-1.5 rounded-full ${course.color} transition-all duration-500" style="width: ${p}%"></div></div><div class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editCourse(${course.id})" class="text-gray-500 hover:text-white"><i class="fas fa-pen text-xs"></i></button></div></div>`;});}
         function openCourseModal(mode='add',id=null){STATE.modalMode=mode; STATE.editingId=id; document.getElementById('course-modal').classList.add('active'); if(mode==='edit'){const c=STATE.courses.find(x=>x.id===id); document.getElementById('course-name').value=c.name; document.getElementById('course-current').value=c.current; document.getElementById('course-total').value=c.total;}else{document.getElementById('course-name').value=""; document.getElementById('course-current').value=0; document.getElementById('course-total').value=100;}}
-        function closeModal(id){document.getElementById(id).classList.remove('active');}
         function saveCourse(){const n=document.getElementById('course-name').value, c=parseInt(document.getElementById('course-current').value), t=parseInt(document.getElementById('course-total').value); if(!n)return; if(STATE.modalMode==='add') STATE.courses.push({id:Date.now(), name:n, current:c, total:t, color:STATE.selectedColor}); else {const course=STATE.courses.find(x=>x.id===STATE.editingId); if(course){course.name=n;course.current=c;course.total=t;course.color=STATE.selectedColor;}} saveData(); renderCourses(); closeModal('course-modal');}
         function editCourse(id){openCourseModal('edit', id);}
         function selectColor(c){STATE.selectedColor=c;}
